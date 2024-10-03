@@ -2,6 +2,7 @@ asgiref==3.8.1
 click==8.1.7
 colorama==0.4.6
 Django==4.0.4
+django-debug-toolbar==4.4.6
 djangorestframework==3.13.1
 mypy-extensions==1.0.0
 packaging==24.1
