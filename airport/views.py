@@ -1,16 +1,20 @@
 from django.db.models import F, Count, Prefetch
 from drf_spectacular.utils import extend_schema, OpenApiParameter
-from rest_framework import viewsets, mixins
+from rest_framework import viewsets
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAuthenticated
-from rest_framework.viewsets import GenericViewSet
 
 from airport.models import (
     Crew,
     Airport,
-    AirplaneType, Route, Airplane, Order, Flight, Ticket,
+    AirplaneType,
+    Route,
+    Airplane,
+    Order,
+    Flight,
+    Ticket,
 )
-from airport.permissions import IsAdminOrIfAuthenticatedReadOnly
+from airport.permissions import IsAdminOrReadOnly
 from airport.serializers import (
     CrewSerializer,
     AirportSerializer,
@@ -29,34 +33,21 @@ from airport.serializers import (
 )
 
 
-class CrewViewSet(
-    mixins.CreateModelMixin,
-    mixins.ListModelMixin,
-    GenericViewSet,
-):
+class CrewViewSet(viewsets.ModelViewSet):
     queryset = Crew.objects.all()
     serializer_class = CrewSerializer
-    permission_classes = (IsAdminOrIfAuthenticatedReadOnly,)
+    permission_classes = (IsAdminOrReadOnly,)
 
 
-class AirportViewSet(
-    mixins.CreateModelMixin,
-    mixins.ListModelMixin,
-    GenericViewSet,
-):
+class AirportViewSet(viewsets.ModelViewSet):
     queryset = Airport.objects.all()
     serializer_class = AirportSerializer
-    permission_classes = (IsAdminOrIfAuthenticatedReadOnly,)
+    permission_classes = (IsAdminOrReadOnly,)
 
 
-class RouteViewSet(
-    mixins.ListModelMixin,
-    mixins.CreateModelMixin,
-    mixins.RetrieveModelMixin,
-    viewsets.GenericViewSet,
-):
+class RouteViewSet(viewsets.ModelViewSet):
     queryset = Route.objects.all().select_related("source", "destination")
-    permission_classes = (IsAdminOrIfAuthenticatedReadOnly,)
+    permission_classes = (IsAdminOrReadOnly,)
 
     def get_serializer_class(self):
         if self.action == "list":
@@ -68,24 +59,15 @@ class RouteViewSet(
         return RouteSerializer
 
 
-class AirplaneTypeViewSet(
-    mixins.CreateModelMixin,
-    mixins.ListModelMixin,
-    GenericViewSet,
-):
+class AirplaneTypeViewSet(viewsets.ModelViewSet):
     queryset = AirplaneType.objects.all()
     serializer_class = AirplaneTypeSerializer
-    permission_classes = (IsAdminOrIfAuthenticatedReadOnly,)
+    permission_classes = (IsAdminOrReadOnly,)
 
 
-class AirplaneViewSet(
-    mixins.ListModelMixin,
-    mixins.CreateModelMixin,
-    mixins.RetrieveModelMixin,
-    viewsets.GenericViewSet,
-):
+class AirplaneViewSet(viewsets.ModelViewSet):
     queryset = Airplane.objects.all().select_related("airplane_type")
-    permission_classes = (IsAdminOrIfAuthenticatedReadOnly,)
+    permission_classes = (IsAdminOrReadOnly,)
 
     def get_queryset(self):
         queryset = self.queryset
@@ -120,7 +102,7 @@ class AirplaneViewSet(
 
 class FlightViewSet(viewsets.ModelViewSet):
     queryset = Flight.objects.all()
-    permission_classes = (IsAdminOrIfAuthenticatedReadOnly,)
+    permission_classes = (IsAdminOrReadOnly,)
 
     def get_queryset(self):
         queryset = self.queryset.select_related(
@@ -164,15 +146,11 @@ class FlightViewSet(viewsets.ModelViewSet):
 
 
 class OrderPagination(PageNumberPagination):
-    page_size = 10
+    page_size = 5
     max_page_size = 100
 
 
-class OrderViewSet(
-    mixins.ListModelMixin,
-    mixins.CreateModelMixin,
-    GenericViewSet,
-):
+class OrderViewSet(viewsets.ModelViewSet):
     queryset = Order.objects.all()
     pagination_class = OrderPagination
     permission_classes = (IsAuthenticated,)
