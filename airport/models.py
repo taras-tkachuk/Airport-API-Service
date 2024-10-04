@@ -77,7 +77,7 @@ class Flight(models.Model):
     )
     departure_time = models.DateTimeField()
     arrival_time = models.DateTimeField()
-    crews = models.ManyToManyField(Crew, related_name="flights")
+    crews = models.ManyToManyField(Crew, related_name="flights", blank=True)
 
     def __str__(self) -> str:
         return f"{self.route} ({self.departure_time} - {self.arrival_time})"
