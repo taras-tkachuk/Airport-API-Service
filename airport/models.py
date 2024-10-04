@@ -39,6 +39,9 @@ class Route(models.Model):
     def __str__(self) -> str:
         return f"{self.source} - {self.destination} ({self.distance} km)"
 
+    class Meta:
+        unique_together = ("source", "destination")
+
 
 class AirplaneType(models.Model):
     name = models.CharField(max_length=69)
