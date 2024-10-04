@@ -1,4 +1,5 @@
 from django.db.models import F, Count, Prefetch
+from drf_spectacular.utils import extend_schema, OpenApiParameter
 from rest_framework import viewsets, mixins
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAuthenticated
@@ -86,6 +87,15 @@ class AirplaneViewSet(
     queryset = Airplane.objects.all().select_related("airplane_type")
     permission_classes = (IsAdminOrIfAuthenticatedReadOnly,)
 
+    def get_queryset(self):
+        queryset = self.queryset
+        name = self.request.query_params.get("name")
+
+        if name:
+            queryset = queryset.filter(name__icontains=name)
+
+        return queryset
+
     def get_serializer_class(self):
         if self.action == "list":
             return AirplaneListSerializer
@@ -94,6 +104,18 @@ class AirplaneViewSet(
             return AirplaneDetailSerializer
 
         return AirplaneSerializer
+
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
+                "name",
+                type={"type": "string"},
+                description="Filter by name (example: ?name=Boeing)",
+            ),
+        ]
+    )
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
 
 
 class FlightViewSet(viewsets.ModelViewSet):
@@ -112,6 +134,11 @@ class FlightViewSet(viewsets.ModelViewSet):
                     F("airplane__rows") * F("airplane__seats_in_row") - Count("tickets")
             )
         )
+
+        route = self.request.query_params.get("route")
+        if route:
+            route_id = int(route)
+            queryset = queryset.filter(route__id=route_id)
         return queryset
 
     def get_serializer_class(self):
@@ -122,6 +149,18 @@ class FlightViewSet(viewsets.ModelViewSet):
             return FlightDetailSerializer
 
         return FlightSerializer
+
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
+                "route",
+                type={"type": "number"},
+                description="Filter by route id (example: ?route=1)",
+            ),
+        ]
+    )
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
 
 
 class OrderPagination(PageNumberPagination):
