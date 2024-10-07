@@ -1,11 +1,23 @@
+import os
+import uuid
+
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import models
+from django.utils.text import slugify
+
+
+def crew_image_file_path(instance, filename):
+    _, extension = os.path.splitext(filename)
+    filename = f"{slugify(instance.full_name)}-{uuid.uuid4()}{extension}"
+
+    return os.path.join("uploads/crews/", filename)
 
 
 class Crew(models.Model):
     first_name = models.CharField(max_length=69)
     last_name = models.CharField(max_length=69)
+    image = models.ImageField(null=True, upload_to=crew_image_file_path)
 
     def __str__(self) -> str:
         return f"{self.last_name} {self.first_name}"

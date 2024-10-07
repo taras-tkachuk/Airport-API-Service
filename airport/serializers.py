@@ -14,10 +14,16 @@ from airport.models import (
 )
 
 
+class CrewImageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Crew
+        fields = ("id", "image")
+
+
 class CrewSerializer(serializers.ModelSerializer):
     class Meta:
         model = Crew
-        fields = ("id", "first_name", "last_name")
+        fields = ("id", "first_name", "last_name", "image")
 
 
 class AirportSerializer(serializers.ModelSerializer):
