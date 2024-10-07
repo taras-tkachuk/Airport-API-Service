@@ -130,9 +130,10 @@ class FlightViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         queryset = self.queryset.select_related(
+            "route",
             "route__source",
             "route__destination",
-            "airplane__airplane_type"
+            "airplane"
         ).prefetch_related(
             "crews",
         ).annotate(
@@ -142,9 +143,20 @@ class FlightViewSet(viewsets.ModelViewSet):
         )
 
         route = self.request.query_params.get("route")
+        source = self.request.query_params.get("source")
+        destination = self.request.query_params.get("destination")
+
         if route:
             route_id = int(route)
             queryset = queryset.filter(route__id=route_id)
+        if source:
+            queryset = queryset.filter(
+                route__source__closet_big_city__icontains=source
+            )
+        if destination:
+            queryset = queryset.filter(
+                route__destination__closet_big_city__icontains=destination
+            )
         return queryset
 
     def get_serializer_class(self):
@@ -162,6 +174,16 @@ class FlightViewSet(viewsets.ModelViewSet):
                 "route",
                 type={"type": "number"},
                 description="Filter by route id (example: ?route=1)",
+            ),
+            OpenApiParameter(
+                "source",
+                type={"type": "str"},
+                description="Filter by source  (ex. ?source=London)",
+            ),
+            OpenApiParameter(
+                "destination",
+                type={"type": "str"},
+                description="Filter by destination id (ex. ?destination=Paris)",
             ),
         ]
     )
